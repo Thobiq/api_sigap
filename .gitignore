@@ -1,0 +1,5 @@
+.env
+.env.local
+
+.json
+/src/config/*.json
