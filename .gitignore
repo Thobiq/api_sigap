@@ -1,6 +1,5 @@
 .env
 .env.local
 
-.json
 /src/config/*.json
 /src/config/sigap-pa-pbm-firebase-adminsdk-fbsvc-fecdf01a70.json
