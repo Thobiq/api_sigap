@@ -50,7 +50,7 @@ const ensureEmergencyReportTableExist = async () => {
 const createEmergencyReport = async ({userId, latitude, longitude, reportType, description, image_url}) => {
     try {
         const result =  await pool.query(
-            `INSERT TO emergency_reports (user_id, latitude, longitude, report_type, description, image_url)
+            `INSERT INTO emergency_reports (user_id, latitude, longitude, report_type, description, image_url)
             VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
             [userId, latitude, longitude,reportType, description, image_url]
         )

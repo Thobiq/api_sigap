@@ -43,7 +43,7 @@ const ensureRespondersTableExists = async ()=>{
 const getAllActiveResponders = async()=>{
     try{
         const result = await pool.query(`
-            SELECT id, name, type, latitude, longitude, address, phone_number, cfm_token, role
+            SELECT id, name, type, latitude, longitude, address, phone_number, fcm_token, role
             FROM responders
             WHERE is_active = TRUE
             AND type IN ('rumah sakit', 'polisi', 'pemadam kebakaran')
@@ -115,5 +115,6 @@ module.exports = {
     createResponders,
     findResponderByEmail,
     updateResponderAvailability,
+    updateResponderFcmToken,
     RESPONDER_TYPES
 }

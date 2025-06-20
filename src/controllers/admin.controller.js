@@ -26,7 +26,7 @@ const addResponderInstitution = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10); 
         
-        const newResponder = await responderModel.createResponder({
+        const newResponder = await responderModel.createResponders({
             email,
             passwordHash: hashedPassword,
             name,
@@ -40,7 +40,7 @@ const addResponderInstitution = async (req, res) => {
 
         res.status(201).json({ success: true, message: 'Institusi responden berhasil ditambahkan.', responder: newResponder });
     } catch (error) {
-        console.error('❌ Error adding new responder institution:', error.message);
+        console.error('Error adding new responder institution:', error.message);
         res.status(500).json({ success: false, message: 'Gagal menambahkan institusi responden.', error: error.message });
     }
 };

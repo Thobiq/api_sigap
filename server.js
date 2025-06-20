@@ -5,6 +5,9 @@ const bcrypt = require('bcryptjs')
 
 require('./src/config/firebase')
 
+const swaggerUi = require('swagger-ui-express')
+const swaggerSpecs = require('./src/config/swagger')
+
 const pool = require('./src/config/db.config')
 
 const authRoutes = require('./src/routes/auth.routes')
@@ -22,6 +25,9 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors())
 app.use(express.json())
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs))
+console.log(`api documentation at http://localhost:${PORT}/api-docs`)
 
 app.use('/uploads', express.static('uploads'))
 app.use('/api/auth', authRoutes)

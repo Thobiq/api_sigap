@@ -52,7 +52,7 @@ const createReport = async (req, res) => {
             }).
             filter(item => {
                 const isTypeMatch = relevantResponderType ? item.responder.type === relevantResponderType : true
-                const isWithinRange = item.distance <= 50
+                const isWithinRange = item.distance <= 500
                 return isTypeMatch && isWithinRange
             })
         responderWithDistance.sort((a,b) => a.distance - b.distance)
@@ -65,8 +65,8 @@ const createReport = async (req, res) => {
             .map(item => item.responder.fcm_token)
             .filter(token => token)
 
-        if (fcmTokensToNotify.length > 0) {
-            const uniqueFcmTokens = [...new Set(fcmTokensToNotify)]; // Pastikan token unik
+        if (fcmTokenToNotify.length > 0) {
+            const uniqueFcmTokens = [...new Set(fcmTokenToNotify)];
 
             await notificationService.sendPushNotification(
                 uniqueFcmTokens,
@@ -91,7 +91,7 @@ const createReport = async (req, res) => {
 
     } catch(err){
         console.error('error creating emergenci report: ', err.message)
-        res.status(500).json({success: false, message: 'Gagal membuat laporan darurat.', error: error.message})
+        res.status(500).json({success: false, message: 'Gagal membuat laporan darurat.', error: err.message})
     }
 }
 
