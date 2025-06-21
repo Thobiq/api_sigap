@@ -7,7 +7,7 @@ const router = express.Router()
 /**
  * @swagger
  * tags:
- *   name: Responders (Institutions)
+ *   name: Responders
  *   description: API untuk otentikasi dan pengelolaan Responden (Institusi)
  */
 
@@ -15,8 +15,8 @@ const router = express.Router()
  * @swagger
  * /responders/auth:
  *   post:
- *     summary: Login Responden (Institusi)
- *     tags: [Responders (Institutions)]
+ *     summary: Login Responden
+ *     tags: [Responders]
  *     requestBody:
  *       required: true
  *       content:
@@ -98,8 +98,8 @@ router.post('/auth', responderController.handleResponderAuth)
  * @swagger
  * /responders/fcm-token:
  *   put:
- *     summary: Memperbarui Firebase Cloud Messaging (FCM) token responden (institusi)
- *     tags: [Responders (Institutions)]
+ *     summary: Memperbarui Firebase Cloud Messaging (FCM) token responden
+ *     tags: [Responders]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -140,9 +140,9 @@ router.put(
  * @swagger
  * /responders/availability:
  *   put:
- *     summary: Memperbarui status ketersediaan responden (institusi)
+ *     summary: Memperbarui status ketersediaan responden
  *     description: Mengubah status 'is_active' dari institusi responden. Digunakan oleh responden itu sendiri atau admin.
- *     tags: [Responders (Institutions)]
+ *     tags: [Responders]
  *     security:
  *       - bearerAuth: []
  *     requestBody:

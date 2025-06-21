@@ -52,14 +52,35 @@ const createReport = async (req, res) => {
             }).
             filter(item => {
                 const isTypeMatch = relevantResponderType ? item.responder.type === relevantResponderType : true
-                const isWithinRange = item.distance <= 500
+                const isWithinRange = item.distance <= 50
                 return isTypeMatch && isWithinRange
             })
+
         responderWithDistance.sort((a,b) => a.distance - b.distance)
         const closestResponders = responderWithDistance.slice(0,3)
 
         console.log(`[Create Report] Found ${closestResponders.length} closest relevant responders for report ${newReport.id}:`);
         closestResponders.forEach(r => console.log(` - ${r.responder.name} (${r.responder.type}), Distance: ${r.distance.toFixed(2)} km`));
+
+        let assignedResponderId = null
+        let assignedResponderName = null
+        let assignedResponderType = null
+
+        if (closestResponders){
+            assignedResponderId = closestResponders.responder.id
+            assignedResponderName = closestResponders.responder.name
+            assignedResponderType = closestResponders.type
+
+            newReport = await emergencyReportModel.assignReportToResponder(newReport.id, assignedResponderId);
+            console.log(`report to ${newReport.id} assigned to ${assignedResponderName}`)
+        } else{
+            console.log('relevant responder not found')
+        }
+
+        console.log(`create report found ${closestResponders ? '1':'0'} closest responder`)
+        if (closestResponder) {
+            console.log(` - ${closestResponders.responder.name} (${closestResponders.responder.type}), Distance: ${closestResponders.distance.toFixed(2)} km`);
+        }
 
         const fcmTokenToNotify = closestResponders
             .map(item => item.responder.fcm_token)
@@ -90,8 +111,56 @@ const createReport = async (req, res) => {
         res.status(201).json({success: true, message: 'Laporan darurat berhasil dibuat dan responden terdekat telah dinotifikasi.', report: newReport})
 
     } catch(err){
-        console.error('error creating emergenci report: ', err.message)
+        console.error('error creating emergency report: ', err.message)
         res.status(500).json({success: false, message: 'Gagal membuat laporan darurat.', error: err.message})
+    }
+}
+
+const updateReportStatusByResponder = async (req, res) => {
+    const reportId = req.params.id;
+    const {status: newStatus} = req.body
+    const responderId = req.user.id
+    const responderType = req.user.type
+    const responderName = req.user.name
+
+    if(!emergencyReportModel.REPORT_STATUSES.includes(newStatus)){
+        return res.status(400).json({success: false, message: 'status tidak valid'})
+    }
+
+    try {
+        const report = await emergencyReportModel.getReportById(reportId)
+
+        if (!report){
+            return res.status(404).json({success: false, message: 'laporan tidak ditemukan'})
+        }
+
+        if (report.assigned_responder_id !== responderId){
+            return res.status(403).json({success: false, message: 'anda tidak memiliki izin untuk update status laporan'})
+        }
+
+        const updateReport = await emergencyReportModel.updateReportStatus(reportId, newStatus)
+
+        if (updateReport){
+            res.status(200).json({success: true, message: 'status laporan berhasil diubah'})
+        }else{
+            res.status(500).json({success: false, message: 'gagal memperbarui status laporan'})
+        }
+    } catch (err){
+        console.error('error update report status :', err.message)
+        res.status(500).json({success: false, message: 'gagal memperbarui status laporan', error: err.message})
+    }
+}
+
+const deleteEmergencyReportByUser = async (req, res) => {
+    const userId = req.user.id
+    const reportId = req.params.id
+
+    try {
+        const deleteReport = await emergencyReportModel.deleteEmergencyReport(reportId, userId)
+        res.status(200).json({success: true, message: 'report berhasil dihapus'})
+    } catch(err){
+        console.error('error deleting report : ', err.message)
+        res.status(500).json({success: false, message: 'gagal menghapus laporan'})
     }
 }
 
@@ -132,5 +201,7 @@ const getReportDetail = async (req, res) => {
 module.exports = {
     createReport,
     getMyReports,
-    getReportDetail
+    getReportDetail,
+    updateReportStatusByResponder,
+    deleteEmergencyReportByUser
 }

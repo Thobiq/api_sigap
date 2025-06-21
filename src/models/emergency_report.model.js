@@ -31,6 +31,7 @@ const ensureEmergencyReportTableExist = async () => {
                 description TEXT,
                 image_url TEXT,
                 status report_status_enum DEFAULT 'pending',
+                assigned_responder_id INT NULL REFERENCES responders(id),
                 created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
             );
@@ -57,6 +58,32 @@ const createEmergencyReport = async ({userId, latitude, longitude, reportType, d
         return result.rows[0]
     } catch (err){
         console.error('erro creating emergency report :', err.message)
+        throw err
+    }
+}
+
+const deleteEmergencyReport = async (reportId, userId)=>{
+    try{
+        const result = await pool.query(
+            `DELETE FROM emergency_reports WHERE id = $1 AND user_id = $2 AND status = "selesai" RETURNING *`,
+            [reportId, userId]
+        )
+        return result.rows[0]
+    } catch (err){
+        console.error('error deleting report :', err.message)
+        throw err
+    }
+}
+
+const assignReportToResponder = async (reportId, responderId) => {
+    try {
+        const result = await pool.query(
+            `UPDATE emergency_reports SET assigned_responder_id = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *`,
+            [responderId, reportId]
+        )
+        return result.rows[0]
+    }catch(err){
+        console.error('assigning report to responder: ', err.message)
         throw err
     }
 }
@@ -106,9 +133,11 @@ const updateReportStatus = async (reportId, newStatus) => {
     }
 }
 
-module.exports ={
+module.exports = {
     ensureEmergencyReportTableExist,
     createEmergencyReport,
+    deleteEmergencyReport,
+    assignReportToResponder,
     getReportsByUserId,
     getReportById,
     getAllReports,

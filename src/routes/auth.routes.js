@@ -14,7 +14,7 @@ const router = express.Router();
  * @swagger
  * /auth/pelapor-auth:
  *   post:
- *     summary: Autentikasi atau Daftar Pelapor (via Google atau Email/Password Firebase)
+ *     summary: Login Pelapor
  *     tags: [Authentication]
  *     requestBody:
  *       required: true
@@ -27,11 +27,9 @@ const router = express.Router();
  *             properties:
  *               idToken:
  *                 type: string
- *                 description: Firebase ID Token yang diperoleh dari proses autentikasi Google atau Email/Password di aplikasi Flutter.
- *                 example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
  *     responses:
  *       200:
- *         description: Autentikasi berhasil. Mengembalikan JWT kustom dari backend dan data pengguna.
+ *         description: Login admin berhasil.
  *         content:
  *           application/json:
  *             schema:
@@ -42,61 +40,38 @@ const router = express.Router();
  *                   example: true
  *                 message:
  *                   type: string
- *                   example: "Authentication successful"
+ *                   example: "Pelapor login successful"
  *                 token:
  *                   type: string
- *                   description: JWT kustom dari backend untuk otorisasi selanjutnya.
+ *                   description: JWT kustom untuk pelapor.
  *                   example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
  *                 user:
  *                   type: object
  *                   properties:
  *                     id:
  *                       type: integer
- *                       example: 1
+ *                       example: 2
  *                     email:
  *                       type: string
- *                       example: "user@mail.com"
+ *                       example: "user@sigap.com"
  *                     name:
  *                       type: string
- *                       nullable: true
- *                       example: "Nama Pengguna"
+ *                       example: "Pengguna SIGAP"
  *                     phoneNumber:
  *                       type: string
- *                       nullable: true
- *                       example: "081234567890"
+ *                       example: "0812345678910"
  *                     avatarUrl:
  *                       type: string
- *                       nullable: true
- *                       example: "https://example.com/avatar.jpg"
+ *                       example: "avatar.jpg"
  *                     role:
  *                       type: string
  *                       example: "pelapor"
  *       400:
- *         description: Permintaan tidak valid (misal: idToken tidak disertakan).
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: false
- *                 message:
- *                   type: string
- *                   example: "ID Token is required."
+ *         description: Permintaan tidak valid (email/password tidak disertakan).
  *       401:
- *         description: Autentikasi gagal (misal: ID Token kadaluarsa atau tidak valid).
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: false
- *                 message:
- *                   type: string
- *                   example: "Authentication failed"
+ *         description: Kredensial atau peran admin tidak valid.
+ *       500:
+ *         description: Server error.
  */
 router.post('/pelapor-auth', authController.handlePelaporAuth)
 

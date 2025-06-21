@@ -42,8 +42,8 @@ const router = express.Router()
  *                 description: Longitude lokasi kejadian.
  *               reportType:
  *                 type: string
- *                 enum: [Kebakaran, Kecelakaan, Medis, Kriminalitas, Bencana Alam, Lainnya]
- *                 example: "Kecelakaan"
+ *                 enum: [kebakaran, kecelakaan, medis, kriminalitas, bencana alam, lainnya]
+ *                 example: "kecelakaan"
  *                 description: Tipe insiden darurat.
  *               description:
  *                 type: string
@@ -88,18 +88,22 @@ const router = express.Router()
  *                       example: 113.725678
  *                     report_type:
  *                       type: string
- *                       example: "Kecelakaan"
+ *                       example: "kecelakaan"
  *                     description:
  *                       type: string
  *                       nullable: true
- *                       example: "Terjadi kecelakaan motor dan mobil di persimpangan jalan."
+ *                       example: "Terjadi kecelakaan..."
  *                     image_url:
  *                       type: string
  *                       nullable: true
- *                       example: "http://localhost:3000/uploads/image.png"
+ *                       example: "http://localhost:3000/uploads/..."
  *                     status:
  *                       type: string
- *                       example: "Pending"
+ *                       example: "pending"
+ *                     assigned_responder_id:
+ *                       type: integer
+ *                       nullable: true
+ *                       example: 3
  *                     created_at:
  *                       type: string
  *                       format: date-time
@@ -120,6 +124,57 @@ router.post(
     authMiddleware.authenticateToken,
     authMiddleware.isPelapor,
     emergencyReportController.createReport
+)
+
+/**
+ * @swagger
+ * /reports/{id}:
+ *   delete:
+ *     summary: Menghapus laporan darurat milik pelapor
+ *     description: Hanya pelapor yang memiliki laporan tersebut yang dapat menghapusnya.
+ *     tags: [Emergency Reports (Pelapor)]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID dari laporan darurat yang akan dihapus.
+ *     responses:
+ *       200:
+ *         description: Laporan berhasil dihapus.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Laporan berhasil dihapus."
+ *                 deletedReportId:
+ *                   type: integer
+ *                   example: 123
+ *       400:
+ *         description: ID laporan tidak valid.
+ *       401:
+ *         description: Tidak terautentikasi.
+ *       403:
+ *         description: Tidak memiliki izin (bukan pelapor laporan ini).
+ *       404:
+ *         description: Laporan tidak ditemukan.
+ *       500:
+ *         description: Server error saat menghapus laporan.
+ */
+router.delete(
+    '/:id',
+    authMiddleware.authenticateToken,
+    authMiddleware.isPelapor,
+    emergencyReportController.deleteEmergencyReportByUser
 )
 
 /**
@@ -267,12 +322,113 @@ router.get(
  *       500:
  *         description: Server error.
  */
-
 router.get(
     '/:id', 
     authMiddleware.authenticateToken,
     authMiddleware.isPelapor,
     emergencyReportController.getReportDetail
+)
+
+/**
+ * @swagger
+ * /reports/{id}/status:
+ *   put:
+ *     summary: Memperbarui status laporan darurat (oleh Responden atau Admin)
+ *     tags: [Emergency Reports (Responden)]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID dari laporan darurat yang akan diperbarui.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - status
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 enum: [pending, diproses, selesai, ditolak]
+ *                 example: "diproses"
+ *                 description: Status baru laporan.
+ *     responses:
+ *       200:
+ *         description: Status laporan berhasil diperbarui.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Status laporan berhasil diubah menjadi 'diproses'."
+ *                 report:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                       example: 1
+ *                     user_id:
+ *                       type: integer
+ *                       example: 101
+ *                     latitude:
+ *                       type: number
+ *                       format: float
+ *                       example: -8.151234
+ *                     longitude:
+ *                       type: number
+ *                       format: float
+ *                       example: 113.725678
+ *                     report_type:
+ *                       type: string
+ *                       example: "kecelakaan"
+ *                     description:
+ *                       type: string
+ *                       nullable: true
+ *                       example: "..."
+ *                     image_url:
+ *                       type: string
+ *                       nullable: true
+ *                       example: "..."
+ *                     status:
+ *                       type: string
+ *                       example: "diproses"
+ *                     assigned_responder_id:
+ *                       type: integer
+ *                       nullable: true
+ *                       example: 3
+ *                     created_at:
+ *                       type: string
+ *                       format: date-time
+ *                     updated_at:
+ *                       type: string
+ *                       format: date-time
+ *       400:
+ *         description: Validasi input gagal atau status tidak valid.
+ *       401:
+ *         description: Tidak terautentikasi.
+ *       403:
+ *         description: Tidak memiliki izin (bukan responden yang ditugaskan atau bukan admin).
+ *       404:
+ *         description: Laporan tidak ditemukan.
+ *       500:
+ *         description: Server error.
+ */
+router.put(
+    '/:id/status',
+    authMiddleware.authenticateToken,
+    authMiddleware.isResponder,
+    emergencyReportController.updateReportStatusByResponder
 )
 
 module.exports = router;
