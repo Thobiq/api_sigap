@@ -38,10 +38,10 @@ const addResponderInstitution = async (req, res) => {
             role: 'responder'
         });
 
-        res.status(201).json({ success: true, message: 'Institusi responden berhasil ditambahkan.', responder: newResponder });
+        res.status(201).json({ success: true, message: 'responden berhasil ditambahkan.', responder: newResponder });
     } catch (error) {
-        console.error('Error adding new responder institution:', error.message);
-        res.status(500).json({ success: false, message: 'Gagal menambahkan institusi responden.', error: error.message });
+        console.error('Error adding new responder :', error.message);
+        res.status(500).json({ success: false, message: 'Gagal menambahkan responden.', error: error.message });
     }
 };
 

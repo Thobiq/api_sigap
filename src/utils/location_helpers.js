@@ -3,7 +3,7 @@
  * @param {number} lon1
  * @param {number} lat2
  * @param {number} lon2
- * @returns {number} jarak
+ * @returns {number} 
  */
 
 function haversineDistance(lat1, lon1, lat2, lon2){
